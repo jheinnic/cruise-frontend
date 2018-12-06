@@ -1,6 +1,9 @@
 {
   "name": "chorustest",
-  "version": "0.0.0",
+  "version": "0.0.1",
+  "description": "Chrous AI Angular Test",
+  "author": "John Heinnickel <jheinnic@gmail.com>",
+  "license": "MIT",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",

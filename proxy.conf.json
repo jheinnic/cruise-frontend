@@ -1,0 +1,8 @@
+{
+  "/api/*": {
+    "target": "https://static.chorus.ai/api",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true
+  }
+}
