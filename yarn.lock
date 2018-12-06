@@ -309,30 +309,30 @@
     lodash "^4.17.10"
     to-fast-properties "^2.0.0"
 
-"@ngrx/effects@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-6.1.2.tgz#602f3ee9798e00179075ddef030ded88c28b1aa1"
-  integrity sha512-RUuQ5/7ofxGEZnRRdlC1oE9ugVlTYGm92MVj7c6IirHrVN9W5yQjjMTYEYceVCDOYsiXP7Pyw0dcPp6J5wD2EQ==
+"@ngrx/effects@^7.0.0-beta.1":
+  version "7.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/effects/-/effects-7.0.0-beta.1.tgz#021876e5b16b90540c53528fd491d27eb3b3732a"
+  integrity sha512-Uga7MLqIVifs6/WEh7w3WuJ4/KJhy7VjpNZ8K/RV7T6h/Qpxs1Kcn1OZ5HCEc8RN7EO0TXUcKF7r9n2Uit/WkA==
 
-"@ngrx/entity@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@ngrx/entity/-/entity-6.1.2.tgz#4573adad159cf482b1895a1760766745997bd142"
-  integrity sha512-kP/l3CEsBlr60dwo+fYaIU6IolNQ6j2756FhcW8OChVCJYtQc/dmJvOyOUdVpYelnYz2IJKqJKJ+K804MkRntA==
+"@ngrx/entity@^7.0.0-beta.1":
+  version "7.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/entity/-/entity-7.0.0-beta.1.tgz#27a0bd554fedd8c8abbbb11e0148511f5a5ff3e3"
+  integrity sha512-tJBOfRCqU+CiVLTAx/4EV6PWidBbwZqOKyRwluvJolR8NKcFApWFIO/ZyEc4u7tg5UI1KSyFPotxwkgyDBhQxA==
 
-"@ngrx/router-store@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@ngrx/router-store/-/router-store-6.1.2.tgz#63bfcd3710c53ea2c5456b82c57fd433e5af25bc"
-  integrity sha512-sj083ZYrx0aY+vU/t8Ub0KYDHcMpatXJIOJR/eDNSuH54fPiBM9MrdI3hs/XHoXHxSaHOJoZ7f6I8XcUeptxyA==
+"@ngrx/router-store@^7.0.0-beta.1":
+  version "7.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/router-store/-/router-store-7.0.0-beta.1.tgz#670498514480722dc96646176e7b707f268e6189"
+  integrity sha512-PTxpjPjVrq3vFbUJOqjIa62ft87nhEpAF7mB/SVbkDZ3FfIztSQw+8yvk6Y2mYdKhs3mCKW8sWlkEvYImLNgvw==
 
-"@ngrx/schematics@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@ngrx/schematics/-/schematics-6.1.2.tgz#52dce7f2d4275791732805576eaf007d1043ef58"
-  integrity sha512-hiu8rdYAJIfIoJHPlAJr+mBkXab7OLRyg8Z/i5lUpmE382yvESfcVI9hqYsGXWBbyfY5Al+BGzGhBth5gc5AvA==
+"@ngrx/schematics@^7.0.0-beta.1":
+  version "7.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/schematics/-/schematics-7.0.0-beta.1.tgz#47c37cc6183b4a39c3f98fc00ee612d83db77518"
+  integrity sha512-2J3vuBrij79DqaNjg+UNETiP2i6x6l3xH6UmRXDoAT4VS6Y1hDZKDcwI9pHF0fClbl1DVrMbiDyf+dyx3qU7DQ==
 
-"@ngrx/store@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-6.1.2.tgz#20fb5ab4d79571b804a348093aa11a167fe2946f"
-  integrity sha512-W9MbXrwhIRmN1BlINF9BT+rHR046e1HNk7GqykcDJrK9wW74PJW3aE5iuPb2sTPipBMjPHsXzc73E4U/+OTAyw==
+"@ngrx/store@^7.0.0-beta.1":
+  version "7.0.0-beta.1"
+  resolved "https://registry.yarnpkg.com/@ngrx/store/-/store-7.0.0-beta.1.tgz#029d362a1355c1fc5badaf7f67a07fcaf3af8f38"
+  integrity sha512-sEF6nb5YRoGroW4Y+ibHQucxzWVfMJF9a4zQV/prxDPtYA2FC9h9ZY3N4TZbLNgg+MSqdThgHXl7vA+5RmIY+Q==
 
 "@ngtools/json-schema@^1.1.0":
   version "1.1.0"
@@ -3579,7 +3579,7 @@ graphql-codegen-typescript-common@0.14.5:
     graphql-codegen-core "0.14.5"
     graphql-codegen-plugin-helpers "0.14.5"
 
-graphql-tag@2.10.0, graphql-tag@~2.10.0:
+graphql-tag@2.10.0, graphql-tag@^2.10.0, graphql-tag@~2.10.0:
   version "2.10.0"
   resolved "https://registry.yarnpkg.com/graphql-tag/-/graphql-tag-2.10.0.tgz#87da024be863e357551b2b8700e496ee2d4353ae"
   integrity sha512-9FD6cw976TLLf9WYIUPCaaTpniawIjHWZSwIRZSjrfufJamcXbVVYfN2TWvJYbw0Xf2JjYbl1/f2+wDnBVw3/w==
