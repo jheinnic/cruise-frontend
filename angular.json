@@ -103,6 +103,38 @@
               "**/node_modules/**"
             ]
           }
+        },
+        "server": {
+          "builder": "@angular-devkit/build-angular:server",
+          "options": {
+            "outputPath": "dist/chorustest-server",
+            "main": "src/main.server.ts",
+            "tsConfig": "src/tsconfig.server.json"
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.prod.ts"
+                }
+              ]
+            }
+          }
+        },
+        "app-shell": {
+          "builder": "@angular-devkit/build-angular:app-shell",
+          "options": {
+            "browserTarget": "chorustest:build",
+            "serverTarget": "chorustest:server",
+            "route": "app-shell-path"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "chorustest:build:production",
+              "serverTarget": "chorustest:server:production"
+            }
+          }
         }
       }
     },
@@ -127,6 +159,41 @@
           "builder": "@angular-devkit/build-angular:tslint",
           "options": {
             "tsConfig": "e2e/tsconfig.e2e.json",
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "@jchptf/chorus-vtscript": {
+      "root": "projects/jchptf/chorus-vtscript",
+      "sourceRoot": "projects/jchptf/chorus-vtscript/src",
+      "projectType": "library",
+      "prefix": "caivt",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/jchptf/chorus-vtscript/tsconfig.lib.json",
+            "project": "projects/jchptf/chorus-vtscript/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/jchptf/chorus-vtscript/src/test.ts",
+            "tsConfig": "projects/jchptf/chorus-vtscript/tsconfig.spec.json",
+            "karmaConfig": "projects/jchptf/chorus-vtscript/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/jchptf/chorus-vtscript/tsconfig.lib.json",
+              "projects/jchptf/chorus-vtscript/tsconfig.spec.json"
+            ],
             "exclude": [
               "**/node_modules/**"
             ]

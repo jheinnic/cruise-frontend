@@ -17,6 +17,14 @@
     "lib": [
       "es2018",
       "dom"
-    ]
+    ],
+    "paths": {
+      "@jchptf/chorus-vtscript": [
+        "dist/jchptf/chorus-vtscript"
+      ],
+      "@jchptf/chorus-vtscript/*": [
+        "dist/jchptf/chorus-vtscript/*"
+      ]
+    }
   }
 }
