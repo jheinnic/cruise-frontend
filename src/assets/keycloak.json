@@ -1,0 +1,9 @@
+{
+  "realm": "Throwdown",
+  "auth-server-url": "http://portfolio.dev.jchein.name:28080/auth",
+  "ssl-required": "external",
+  "resource": "throwdown-webui",
+  "public-client": true,
+  "enable-cors": true,
+  "confidential-port": 0
+}

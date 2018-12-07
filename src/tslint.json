@@ -10,8 +10,14 @@
         "component-selector": [
             true,
             "element",
-            "cai",
+            [ "cai", "toy" ],
             "kebab-case"
-        ]
+        ],
+      "no-unnecessary-class": [
+        true,
+        "allow-constructor-only",
+        "allow-static-only",
+        "allow-empty-class"
+      ]
     }
 }

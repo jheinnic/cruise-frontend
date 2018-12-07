@@ -1,26 +1,35 @@
-import { BrowserModule } from '@angular/platform-browser';
-import { NgModule } from '@angular/core';
+import {BrowserModule} from '@angular/platform-browser';
+import {RouterModule} from '@angular/router';
+import {NgModule} from '@angular/core';
+import {StoreModule} from '@ngrx/store';
+import {EffectsModule} from '@ngrx/effects';
+import {StoreDevtoolsModule} from '@ngrx/store-devtools';
+import {RouterStateSerializer, StoreRouterConnectingModule} from '@ngrx/router-store';
 
-import { AppRoutingModule } from './app-routing.module';
-import { AppComponent } from './app.component';
-import { RouterModule } from '@angular/router';
-import { StoreModule } from '@ngrx/store';
-import { reducers, metaReducers } from './reducers';
-import { EffectsModule } from '@ngrx/effects';
-import { AppEffects } from './app.effects';
+import {AppEffects, initialState, metaReducers, reducerOptions, reducers} from './store';
+import {AppRoutingModule} from './app-routing.module';
+import {AppComponent} from './app.component';
+import {environment} from '../environments/environment';
+import {SharedModule} from './shared/shared.module';
+import {ToymodModule} from './features/toymod/toymod.module';
+import {CoreModule} from './core/core.module';
+
 
 @NgModule({
   declarations: [
     AppComponent
   ],
   imports: [
-    BrowserModule.withServerTransition({ appId: 'serverApp' }),
+    StoreModule.forRoot(reducers, reducerOptions),
+    StoreRouterConnectingModule.forRoot({stateKey: 'routerReducer'}),
+    EffectsModule.forRoot([AppEffects]),
+    CoreModule,
+    !environment.production ? StoreDevtoolsModule.instrument() : [],
+    SharedModule,
+    ToymodModule,
     AppRoutingModule,
-    RouterModule,
-    StoreModule.forRoot(reducers, { metaReducers }),
-    EffectsModule.forRoot([AppEffects])
   ],
   providers: [],
   bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
