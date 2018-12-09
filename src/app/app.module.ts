@@ -10,6 +10,7 @@ import {AppComponent} from './app.component';
 import {SharedModule} from './shared/shared.module';
 import {ToymodModule} from './features/toymod/toymod.module';
 import {CoreModule} from './core/core.module';
+import {ContactsModule} from './features/contacts/contacts.module';
 import {MinesweeperModule} from './features/minesweeper/minesweeper.module';
 import {environment} from '../environments/environment';
 
@@ -26,6 +27,7 @@ import {environment} from '../environments/environment';
     !environment.production ? StoreDevtoolsModule.instrument() : [],
     SharedModule,
     ToymodModule,
+    ContactsModule,
     MinesweeperModule,
     AppRoutingModule,
   ],
