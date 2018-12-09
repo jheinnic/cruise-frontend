@@ -41,3 +41,7 @@ testem.log
 # System Files
 .DS_Store
 Thumbs.db
+
+# Throwdown port and exploratory experiments
+src/app/junk*
+throwdown

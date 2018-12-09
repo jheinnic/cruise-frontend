@@ -4,6 +4,7 @@ import {Keys} from 'simplytyped';
 export const environment = {
   production: true,
   baseAppUrl: 'http://portfolio.jchein.name',
+  mineSweeperApiUrl: 'http://localhost:3000',
   keycloakConfigPath: '/assets/keycloak.json',
   keycloakServerUrl: 'http://portfolio.jchein.name/auth',
   onLoginRedirectUrl: '/route-one',
@@ -22,6 +23,7 @@ function injectFromEnvironment(tokenName: Exclude<Keys<typeof environment>, 'pro
 }
 
 export const baseAppUrl: InjectionToken<string> = injectFromEnvironment('baseAppUrl');
+export const mineSweeperApiUrl: InjectionToken<string> = injectFromEnvironment('mineSweeperApiUrl');
 export const keycloakConfigPath: InjectionToken<string> = injectFromEnvironment('keycloakConfigPath');
 export const keycloakServerUrl: InjectionToken<string> = injectFromEnvironment('keycloakServerUrl');
 export const onLoginRedirectUrl: InjectionToken<string> = injectFromEnvironment('onLoginRedirectUrl');

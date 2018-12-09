@@ -1,6 +1,6 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import {FormsModule} from '@angular/forms';
+import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import {RouterModule} from '@angular/router';
 import {PortalModule} from '@angular/cdk/portal';
 import {FlexLayoutModule} from '@angular/flex-layout';
@@ -25,6 +25,7 @@ import {NavbarComponent} from './navbar/navbar.component';
 @NgModule({
   imports: [
     CommonModule,
+    ReactiveFormsModule,
     FormsModule,
     RouterModule,
     LayoutModule,
@@ -46,6 +47,7 @@ import {NavbarComponent} from './navbar/navbar.component';
   ],
   exports: [
     CommonModule,
+    ReactiveFormsModule,
     FormsModule,
     LayoutModule,
     FlexLayoutModule,

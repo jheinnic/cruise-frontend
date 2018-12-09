@@ -18,9 +18,9 @@ import {ApolloModule} from 'apollo-angular';
 import {HttpLinkModule} from 'apollo-angular-link-http';
 import {NgrxCache, NgrxCacheModule} from 'apollo-angular-cache-ngrx';
 import {LoggerModule, NGXLogger, NgxLoggerLevel} from 'ngx-logger';
-import {KeycloakAngularModule, KeycloakOptions, KeycloakService} from 'keycloak-angular';
+// import {KeycloakAngularModule, KeycloakOptions, KeycloakService} from 'keycloak-angular';
 import {moduleImportGuard} from '../utils/module-import-guard.helper';
-import {keycloakOptions} from '../shared/di/keycloak-di.tokens';
+// import {keycloakOptions} from '../shared/di/keycloak-di.tokens';
 import {LayoutComponent} from './layout/layout.component';
 import {SharedModule} from '../shared/shared.module';
 import {CoreFeature, LayoutEffects, ToymodEffects} from './store';
@@ -53,18 +53,18 @@ import {CoreFeature, LayoutEffects, ToymodEffects} from './store';
     ApolloModule,
     NgrxCacheModule,
     HttpLinkModule,
-    KeycloakAngularModule,
+    // KeycloakAngularModule,
     StoreModule.forFeature(CoreFeature.featureKey, CoreFeature.reducerMap, {initialState: CoreFeature.initialState}),
     EffectsModule.forFeature([LayoutEffects, ToymodEffects])
   ],
   declarations: [LayoutComponent],
   providers: [
-    {
-      provide: APP_INITIALIZER,
-      useFactory: keycloakInitFactory,
-      multi: true,
-      deps: [keycloakOptions, KeycloakService, NGXLogger]
-    }
+    // {
+    //   provide: APP_INITIALIZER,
+    //   useFactory: keycloakInitFactory,
+    //   multi: true,
+    //   deps: [keycloakOptions, KeycloakService, NGXLogger]
+    // }
   ],
   exports: [
     RouterModule,
@@ -73,8 +73,8 @@ import {CoreFeature, LayoutEffects, ToymodEffects} from './store';
     HttpClientModule,
     ApolloModule,
     NgrxCacheModule,
-    HttpLinkModule,
-    KeycloakAngularModule,
+    // HttpLinkModule,
+    // KeycloakAngularModule,
     LayoutComponent
   ]
 })
@@ -88,24 +88,13 @@ export class CoreModule
   }
 }
 
-function keycloakInitFactory(keycloakConfig: KeycloakOptions, keycloak: KeycloakService, logger: NGXLogger): () => Promise<any>
-{
-  // const asyncResult: Promise<any> = new Promise(async (resolve, reject) => {
-  //   try {
-  keycloak.keycloakEvents$.subscribe((event) => {
-    logger.info('Keycloak Event: ', JSON.stringify(event));
-  });
-  //     await keycloak.init(keycloakConfig);
-  //     resolve();
-  //   } catch (error) {
-  //     console.error(error);
-  //     reject(error);
-  //   }
+// function keycloakInitFactory(keycloakConfig: KeycloakOptions, keycloak: KeycloakService, logger: NGXLogger): () => Promise<any>
+// {
+  // keycloak.keycloakEvents$.subscribe((event) => {
+  //   logger.info('Keycloak Event: ', JSON.stringify(event));
   // });
-  //
-  // return (): Promise<any> => asyncResult;
-  return (): Promise<boolean> => keycloak.init(keycloakConfig);
-}
+  // return (): Promise<boolean> => keycloak.init(keycloakConfig);
+// }
 
 // function gradientTokenInitFactory(gradientTokenService: GradientTokenService, http: HttpClient, logger: NGXLogger): () => Promise<any> {
 //   return (): Promise<any> => {
