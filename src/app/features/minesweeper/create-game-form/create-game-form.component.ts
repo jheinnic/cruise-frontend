@@ -3,9 +3,9 @@ import {FormBuilder, FormGroup} from '@angular/forms';
 import {Store} from '@ngrx/store';
 import {Subscription} from 'rxjs';
 
-import {BeginNewGame, SetMineCount, SetXSize, SetYSize} from '../store/minesweeper.actions';
-import {selectNewGameProps, State} from '../store/minesweeper.reducer';
-import {BasicGameSetup} from '../store/minesweeper.models';
+import {SendBeginGame, SetMineCount, SetXSize, SetYSize} from '../store/actions/minesweeper.actions';
+import {selectNewGameProps, State} from '../store/reducers/minesweeper.reducer';
+import {SetupOptions} from '../store/models/minesweeper.models';
 
 @Component({
   selector: 'cai-create-game-form',
@@ -29,7 +29,7 @@ export class CreateGameFormComponent implements OnInit, OnDestroy
     this.store.select(selectNewGameProps)
       .toPromise()
       .then(
-        (value: BasicGameSetup) => {
+        (value: SetupOptions) => {
           this.optionsForm.setValue(value);
         }
       );
@@ -60,7 +60,7 @@ export class CreateGameFormComponent implements OnInit, OnDestroy
   public beginGame()
   {
     this.store.dispatch(
-      new BeginNewGame()
+      new SendBeginGame()
     );
   }
 }

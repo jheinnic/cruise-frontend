@@ -2,7 +2,7 @@ import {Component, OnDestroy} from '@angular/core';
 import {Subscription} from 'rxjs';
 import {Store} from '@ngrx/store';
 
-import * as fromStore from '../store/minesweeper.reducer';
+import * as fromStore from '../store/reducers/minesweeper.reducer';
 
 @Component({
   selector: 'cai-play-again-options',

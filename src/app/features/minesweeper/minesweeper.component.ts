@@ -2,8 +2,8 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Observable, Subscription} from 'rxjs';
 
-import * as fromStore from './store/minesweeper.reducer';
-import {GameBoardCell} from './store/minesweeper.models';
+import * as fromStore from './store/reducers/minesweeper.reducer';
+import {GameBoardCell} from './store/models/minesweeper.models';
 
 @Component({
   selector: 'cai-minesweeper',

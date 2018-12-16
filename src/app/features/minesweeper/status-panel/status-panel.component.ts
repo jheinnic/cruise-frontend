@@ -2,7 +2,7 @@ import {Component, OnDestroy, OnInit} from '@angular/core';
 import {Store} from '@ngrx/store';
 import {Subscription} from 'rxjs';
 
-import * as fromStore from '../store/minesweeper.reducer';
+import * as fromStore from '../store/reducers/minesweeper.reducer';
 
 @Component({
   selector: 'cai-status-panel',

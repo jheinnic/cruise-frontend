@@ -3,6 +3,16 @@
     "codelyzer"
   ],
   "rules": {
+    "align": {
+      "severity": "warn",
+      "options": [
+        "arguments",
+        "elements",
+        "members",
+        "parameters",
+        "statements"
+      ]
+    },
     "arrow-return-shorthand": true,
     "callable-types": true,
     "class-name": true,
@@ -31,7 +41,12 @@
       true,
       160
     ],
-    "member-access": false,
+    "match-default-export-name": {
+      "severity": "warning"
+    },
+    "member-access": {
+      "severity": "warn"
+    },
     "member-ordering": [
       true,
       {
@@ -57,7 +72,7 @@
     "no-debugger": true,
     "no-duplicate-super": true,
     "no-empty": false,
-    "no-empty-interface": true,
+    "no-empty-interface": false,
     "no-eval": true,
     "no-inferrable-types": [
       true,
@@ -105,10 +120,23 @@
         "parameter": "nospace",
         "property-declaration": "nospace",
         "variable-declaration": "nospace"
+      },
+      {
+        "call-signature": "onespace",
+        "index-signature": "onespace",
+        "parameter": "onespace",
+        "property-declaration": "onespace",
+        "variable-declaration": "onespace"
       }
     ],
     "unified-signatures": true,
-    "variable-name": false,
+    "variable-name": [
+      true,
+      "check-format",
+      "allow-leading-underscore",
+      "allow-snake-case",
+      "ban-keywords"
+    ],
     "whitespace": [
       true,
       "check-branch",

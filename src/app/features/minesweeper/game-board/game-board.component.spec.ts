@@ -1,24 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Store, StoreModule } from '@ngrx/store';
 
-import { MinesweeperComponent } from './game-board.component';
+import { GameBoardComponent } from './game-board.component';
 
-describe('MinesweeperComponent', () => {
-  let component: MinesweeperComponent;
-  let fixture: ComponentFixture<MinesweeperComponent>;
+describe('GameBoardComponent', () => {
+  let component: GameBoardComponent;
+  let fixture: ComponentFixture<GameBoardComponent>;
   let store: Store<any>;
 
   beforeEach(async() => {
     TestBed.configureTestingModule({
       imports: [ StoreModule.forRoot({}) ],
-      declarations: [ MinesweeperComponent ]
+      declarations: [ GameBoardComponent ]
     });
 
     await TestBed.compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(MinesweeperComponent);
+    fixture = TestBed.createComponent(GameBoardComponent);
     component = fixture.componentInstance;
     store = TestBed.get(Store);
 

@@ -1,11 +1,11 @@
 import {Component, ElementRef, Input, OnDestroy, OnInit, ViewChild} from '@angular/core';
 import {Store} from '@ngrx/store';
 
-import * as fromStore from '../store/minesweeper.reducer';
-import {PlayNextMove} from '../store/minesweeper.actions';
-import {GameBoardCell, LatestOutcome} from '../store/minesweeper.models';
+import * as fromStore from '../store/reducers/minesweeper.reducer';
+import {SendNextMove} from '../store/actions/minesweeper.actions';
+import {GameBoardCell} from '../store/models/minesweeper.models';
 import {PlayerStatus} from '../dto/replies/player-status.enum';
-import {GameState} from '../store/minesweeper.reducer';
+import {GameState} from '../store/reducers/minesweeper.reducer';
 import {Observable, Subscription} from 'rxjs';
 import * as util from 'util';
 
@@ -82,7 +82,7 @@ export class GameBoardComponent implements OnInit, OnDestroy
 
     this.store.select(
       fromStore.selectNextTurnId
-    )
+    );
   }
 
   ngOnDestroy() {
@@ -124,7 +124,7 @@ export class GameBoardComponent implements OnInit, OnDestroy
   {
     console.log('Declaring move for x = ', xCell, 'y = ', yCell);
     this.store.dispatch(
-      new PlayNextMove({ xCell, yCell })
+      new SendNextMove({ xCell, yCell })
     );
   }
 

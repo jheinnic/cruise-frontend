@@ -1,9 +1,9 @@
 import {Injectable} from '@angular/core';
 import {Actions, Effect, ofType} from '@ngrx/effects';
-import {BeginNewGame, EndCurrentGame, MinesweeperActions, MinesweeperActionTypes} from '../store/minesweeper.actions';
+import {SendBeginGame, SendAbortGame, MinesweeperActions, MinesweeperActionTypes} from '../store/actions/minesweeper.actions';
 import {merge, Observable, ObservableInput, Subject} from 'rxjs';
 import {Store} from '@ngrx/store';
-import {State} from '../store/minesweeper.reducer';
+import {State} from '../store/reducers/minesweeper.reducer';
 import {switchMap, takeUntil} from 'rxjs/operators';
 
 @Injectable()
@@ -20,20 +20,20 @@ export class GameServerClient {
   @Effect({dispatch: true})
   public readonly commandTap: Observable<MinesweeperActions> =
     this.actions.pipe(
-      ofType(MinesweeperActionTypes.BeginNewGame),
+      ofType(MinesweeperActionTypes.SendBeginGame),
       switchMap(
-        (_action: BeginNewGame, _index: number): ObservableInput<MinesweeperActions> => {
+        (_action: SendBeginGame, _index: number): ObservableInput<MinesweeperActions> => {
           return this.ingress.asObservable().pipe(
             takeUntil(
               merge(
                 this.actions.pipe(
-                  ofType(MinesweeperActionTypes.ReportPlayerLoses)
+                  ofType(MinesweeperActionTypes.ReceiveGameConcluded)
                 ),
                 this.actions.pipe(
                   ofType(MinesweeperActionTypes.ReportPlayerWins)
                 ),
                 this.actions.pipe(
-                  ofType(MinesweeperActionTypes.EndCurrentGame)
+                  ofType(MinesweeperActionTypes.SendAbortGame)
                 )
               )
             )
@@ -45,7 +45,7 @@ export class GameServerClient {
   cancelGame(): void
   {
     this.ingress.next(
-      new EndCurrentGame()
+      new SendAbortGame()
     );
   }
 }
