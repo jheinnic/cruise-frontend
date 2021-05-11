@@ -1,20 +1,11 @@
 import {PlayerStatus} from '../../dto/replies/player-status.enum';
 import {Omit} from 'simplytyped';
 
-export interface State
-{
-  readonly setupOptions: SetupOptions;
-  readonly playerState: PlayerState;
-  readonly gameBoardState: GameBoardState;
-  readonly previousResult?: GameOutcome;
-}
-
 export interface SetupOptions
 {
   readonly xSize: number;
   readonly ySize: number;
   readonly mineCount: number;
-  readonly initialBoard: GameBoardCell[];
 }
 
 export interface CellCoordinates {
@@ -26,101 +17,90 @@ export interface CellIndex {
   readonly id: number;
 }
 
-export type CellLocation = CellCoordinates | CellIndex;
+// export type CellLocation = CellCoordinates | CellIndex;
 
 export interface GameBoardCell extends CellCoordinates, Partial<CellIndex>
 {
   readonly content: number;
 }
 
-// export enum GameBoardStateType {
-//   INACTIVE = 'inactive',
-//   ACTIVE = 'active',
-//   ABORTING = 'aborting'
-// }
-
 export interface GameBoardState
 {
-  // readonly type: GameBoardStateType.ACTIVE;
   readonly boardContent: ReadonlyArray<GameBoardCell>;
   readonly safeCellsLeft: number;
 }
 
-// export interface InactiveGameBoardState
-// {
-//   readonly type: GameBoardStateType.INACTIVE;
-//   readonly boardContent?: ReadonlyArray<GameBoardCell>;
-//   readonly safeCellsLeft?: number;
-// }
-
-// export interface AbortingGameBoardState
-// {
-//   readonly type: GameBoardStateType.ABORTING;
-//   readonly boardContent: ReadonlyArray<GameBoardCell>;
-//   readonly safeCellsLeft: number;
-// }
-
-// export type GameBoardState = InactiveGameBoardState | ActiveGameBoardState;
-
-export enum GameOutcome {
-  UNRESOLVED,
-  VICTORY,
-  DEFEAT
-}
-
-export enum PlayerStateType
+export enum InteractionStateType
 {
   INACTIVE,
   THINKING,
-  SETUP_PENDING,
-  OUTCOME_PENDING,
-  ABORT_PENDING
+  WAITING,
 }
 
-export interface InactivePlayerState
+export enum PendingOperationType
 {
-  readonly type: PlayerStateType.INACTIVE;
-  readonly latestMove?: CellCoordinates;
+  BEGIN_GAME,
+  TURN_OUTCOME,
+  ABORT_GAME,
+  // RESUME_GAME
 }
 
-export interface ThinkingPlayerState
+export interface InactiveInteractionState
 {
-  readonly type: PlayerStateType.THINKING;
-  readonly latestMove?: CellCoordinates;
+  readonly type: InteractionStateType.INACTIVE;
+  readonly previousGame?: GameOutcome;
+}
+
+export interface ThinkingInteractionState
+{
+  readonly type: InteractionStateType.THINKING;
   readonly nextTurnId: number;
 }
 
-export interface SetupPendingPlayerState
+export interface WaitingInteractionState
 {
-  readonly type: PlayerStateType.SETUP_PENDING;
-  readonly nextTurnId: 0;
+  readonly type: InteractionStateType.WAITING;
+  readonly expectedTurnId: number;
+  readonly operationType: PendingOperationType;
 }
 
-export interface OutcomePendingPlayerState
-{
-  readonly type: PlayerStateType.OUTCOME_PENDING;
+export interface WaitingForTurnOutcomeState extends WaitingInteractionState {
+  readonly operationType: PendingOperationType.TURN_OUTCOME;
   readonly latestMove: CellCoordinates;
-  readonly nextTurnId: number;
 }
 
-export interface AbortPendingPlayerState
-{
-  readonly type: PlayerStateType.ABORT_PENDING;
-  readonly latestMove?: CellCoordinates;
-  readonly nextTurnId: number;
+export interface WaitingForBeginGameState extends WaitingInteractionState {
+  readonly operationType: PendingOperationType.BEGIN_GAME;
 }
 
-export type PlayerState =
-  InactivePlayerState
-  | ThinkingPlayerState
-  | SetupPendingPlayerState
-  | OutcomePendingPlayerState
-  | AbortPendingPlayerState
+export interface WaitingForAbortGameState extends WaitingInteractionState {
+  readonly operationType: PendingOperationType.ABORT_GAME;
+}
+
+export type InteractionState =
+  InactiveInteractionState
+  | ThinkingInteractionState
+  | WaitingForAbortGameState
+  | WaitingForBeginGameState
+  | WaitingForTurnOutcomeState
   ;
 
-export interface LatestOutcome {
+
+export interface TurnOutcome {
   readonly afterTurnId: number;
   readonly nextTurnId: number;
   readonly safeCellsLeft: number;
   readonly cellsRevealed: ReadonlyArray<GameBoardCell>;
+}
+
+export interface GameOutcome {
+  readonly xSize: number;
+  readonly ySize: number;
+  readonly boardContent: ReadonlyArray<GameBoardCell>;
+  readonly safeCellsLeft: number;
+  readonly latestMove?: CellCoordinates;
+}
+
+export interface GameProgress extends GameOutcome {
+  readonly interactionStateType: InteractionStateType;
 }

@@ -3,9 +3,7 @@ import {Store} from '@ngrx/store';
 
 import * as fromStore from '../store/reducers/minesweeper.reducer';
 import {SendNextMove} from '../store/actions/minesweeper.actions';
-import {GameBoardCell} from '../store/models/minesweeper.models';
-import {PlayerStatus} from '../dto/replies/player-status.enum';
-import {GameState} from '../store/reducers/minesweeper.reducer';
+import {GameBoardCell, GameProgress} from '../store/models/minesweeper.models';
 import {Observable, Subscription} from 'rxjs';
 import * as util from 'util';
 
@@ -18,8 +16,7 @@ export class GameBoardComponent implements OnInit, OnDestroy
 {
   private static readonly CELL_SCALES = [24, 32, 48, 64];
 
-  public readonly boardState: Observable<GameBoardCell[]>;
-  public readonly xSize: Observable<number>;
+  public readonly gameProgress: Observable<GameProgress>;
 
   @ViewChild('gameBoard', {read: ElementRef}) private _gameBoard: ElementRef<any>;
 
@@ -29,18 +26,18 @@ export class GameBoardComponent implements OnInit, OnDestroy
     containerOWidth: number,
     idealCellWidth: number,
     idealCellOWidth: number,
-    actualCellWidth: number
+    actualCellSize: number
     actualBoardWidth: number;
   }>;
-  private xSubscription: Subscription;
+
+  private storeSubscription: Subscription;
 
   constructor(private store: Store<fromStore.State>)
   {
-    this.boardState = this.store.select(fromStore.selectBoardState);
-    this.xSize = this.store.select(fromStore.selectXSize);
+    this.gameProgress = this.store.select(fromStore.selectGameProgress);
 
     this._sizes = {
-      actualCellWidth: 48,
+      actualCellSize: 48,
       actualBoardWidth: 144
     };
 
@@ -73,31 +70,35 @@ export class GameBoardComponent implements OnInit, OnDestroy
     // );
   }
 
-  ngOnInit()
+  public ngOnInit()
   {
-    this.xSubscription = this.xSize.subscribe((value: number) => {
-      this._sizes.xSize = value;
+    this.storeSubscription = this.gameProgress.subscribe((value: GameProgress) => {
+      this._sizes.xSize = value.xSize;
       this.validateBoardSizing();
     });
 
-    this.store.select(
-      fromStore.selectNextTurnId
-    );
+    // this.store.select(
+    //   fromStore.selectNextTurnId
+    // );
   }
 
-  ngOnDestroy() {
-    this.xSubscription.unsubscribe();
+  public ngOnDestroy() {
+    this.storeSubscription.unsubscribe();
   }
 
-  public get cellHeight(): number {
-    return this._sizes.actualCellWidth;
+  public get cellSize(): number {
+    return this._sizes.actualCellSize;
+  }
+
+  public get cellFlex(): string {
+    return `0 0 ${this.cellSize}px`;
   }
 
   public get boardWidth(): number {
     return this._sizes.actualBoardWidth;
   }
 
-  validateBoardSizing() {
+  private validateBoardSizing() {
     if (!! this._gameBoard) {
       const xCount = this._sizes.xSize;
 
@@ -108,19 +109,19 @@ export class GameBoardComponent implements OnInit, OnDestroy
         (cellScale: number) => cellScale <= this._sizes.idealCellWidth );
 
       if (! compatible.length) {
-        this._sizes.actualCellWidth = GameBoardComponent.CELL_SCALES[0];
+        this._sizes.actualCellSize = GameBoardComponent.CELL_SCALES[0];
         console.warn(
           `Smallest cell size exceeds overflow threshold by ${GameBoardComponent.CELL_SCALES[0] - this._sizes.idealCellWidth}`);
       } else {
-        this._sizes.actualCellWidth = compatible.pop();
+        this._sizes.actualCellSize = compatible.pop();
       }
 
-      this._sizes.actualBoardWidth = this._sizes.actualCellWidth * xCount;
+      this._sizes.actualBoardWidth = this._sizes.actualCellSize * xCount;
       console.log(JSON.stringify(this._sizes));
     }
   }
 
-  moveHere(xCell: number, yCell: number)
+  public moveHere(xCell: number, yCell: number)
   {
     console.log('Declaring move for x = ', xCell, 'y = ', yCell);
     this.store.dispatch(
@@ -133,7 +134,7 @@ export class GameBoardComponent implements OnInit, OnDestroy
   //   const cellIndex = this.cellIdx(cellX, cellY);
   //   const cellValue = this.latestOutcome.boardState[cellIndex];
   //   console.log('Revealing icon for: cellX -> ', cellX, 'cellY -> ', cellY, ' = ', cellIndex, ' -> ', cellValue);
-  cellIcon(gameBoardCell: GameBoardCell) {
+  public cellIcon(gameBoardCell: GameBoardCell) {
     console.log(`Revealing ${JSON.stringify(gameBoardCell)}`);
     const cellValue = gameBoardCell.content;
 

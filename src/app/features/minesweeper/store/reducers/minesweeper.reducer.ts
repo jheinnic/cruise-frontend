@@ -1,32 +1,39 @@
 import {createFeatureSelector, createSelector} from '@ngrx/store';
 import * as ndarray from 'ndarray';
-import {MinesweeperActions, MinesweeperActionTypes} from '../actions/minesweeper.actions';
-import {InvalidStateChangeError} from '../dto/exception/InvalidStateChangeError';
 import * as util from 'util';
+
+import {InvalidStateChangeError} from '../models/invalid-state-change.error';
+import {MinesweeperActions, MinesweeperActionTypes} from '../actions/minesweeper.actions';
 import {
-  GameBoardCell, GameBoardState, GameBoardStateType, GameOutcome, InactiveGameBoardState, PlayerState, PlayerStateType, SetupOptions, State
+  GameBoardCell, GameBoardState, GameProgress, InteractionState, InteractionStateType, PendingOperationType, SetupOptions
 } from '../models/minesweeper.models';
 
-const BLANK_INVALID_BOARD: InactiveGameBoardState = {
-  boardContent: [],
-  safeCellsLeft: 0,
-  type: GameBoardStateType.INACTIVE
+const BLANK_INVALID_BOARD: ReadonlyArray<GameBoardCell> = [];
+
+const DEFAULT_SETUP_OPTIONS: SetupOptions = {
+  xSize: 3,
+  ySize: 3,
+  mineCount: 3
 };
+const DEFAULT_INITIAL_BOARD: ReadonlyArray<GameBoardCell> =
+  reallocateBoardContent([], DEFAULT_SETUP_OPTIONS);
+
+export interface State
+{
+  readonly setupOptions: SetupOptions;
+  readonly initialBoard: ReadonlyArray<GameBoardCell>;
+  readonly gameBoardState?: GameBoardState;
+  readonly interactionState: InteractionState;
+}
 
 export const initialState: State = {
-  setupOptions: {
-    xSize: 3,
-    ySize: 3,
-    mineCount: 3,
+  setupOptions: DEFAULT_SETUP_OPTIONS,
+  initialBoard: DEFAULT_INITIAL_BOARD,
+  interactionState: {
+    type: InteractionStateType.INACTIVE,
   },
-  playerState: {
-    type: PlayerStateType.INACTIVE,
-  },
-  gameBoardState: BLANK_INVALID_BOARD,
-  previousResult: GameOutcome.UNRESOLVED
+  gameBoardState: undefined
 };
-
-export const featureKey = 'minesweeper';
 
 function areBoardOptionsValid(state: SetupOptions)
 {
@@ -38,7 +45,7 @@ function areBoardOptionsValid(state: SetupOptions)
 }
 
 function areBoardOptionsMutable(state: State) {
-  return state.playerState.type === PlayerStateType.INACTIVE;
+  return state.interactionState.type === InteractionStateType.INACTIVE;
 }
 
 function reduceCellRevelations(
@@ -71,17 +78,26 @@ function reduceCellRevelations(
   return boardContent;
 }
 
-function reallocateBoardContent(gameBoardState: GameBoardState, setupOptions: SetupOptions): InactiveGameBoardState
+function reallocateBoardContent(
+  oldBoardContent: ReadonlyArray<GameBoardCell>, setupOptions: SetupOptions): ReadonlyArray<GameBoardCell>
 {
+  if (! areBoardOptionsValid(setupOptions)) {
+    return BLANK_INVALID_BOARD;
+  }
+
   const boardSize = setupOptions.xSize * setupOptions.ySize;
-  const safeCellsLeft = boardSize - setupOptions.mineCount;
-  const oldBoardContent = gameBoardState.boardContent;
+  const oldBoardSize = oldBoardContent.length;
 
   const boardContent = new Array(boardSize);
+  const noOldCell = {
+    xCell: -1, yCell: -1, content: -99
+  };
   for (let ii = 0, xx = 0; ii < boardSize; xx++)
   {
     for (let yy = 0; yy < setupOptions.ySize; yy++, ii++) {
-      const { xCell, yCell, content } = oldBoardContent[ii];
+      const { xCell, yCell, content } = oldBoardContent[ii]
+        ? oldBoardContent[ii]
+        : noOldCell;
 
       boardContent[ii] = ((xCell === xx) && (yCell === yy) && (content === -1))
         ? oldBoardContent[ii]
@@ -94,26 +110,12 @@ function reallocateBoardContent(gameBoardState: GameBoardState, setupOptions: Se
     }
   }
 
-  return {
-    type: GameBoardStateType.INACTIVE,
-    boardContent,
-    safeCellsLeft
-  };
-}
-
-function applyGameBoardOptions(
-  gameBoardState: GameBoardState, setupOptions: SetupOptions): InactiveGameBoardState
-{
-  if (areBoardOptionsValid(setupOptions)) {
-    return reallocateBoardContent(gameBoardState, setupOptions);
-  } else {
-    return BLANK_INVALID_BOARD;
-  }
+  return boardContent;
 }
 
 export function reducer(state = initialState, action: MinesweeperActions): State
 {
-  let {setupOptions, playerState, gameBoardState} = state;
+  let {setupOptions, interactionState, gameBoardState} = state;
 
   switch (action.type) {
     case MinesweeperActionTypes.SetXSize:
@@ -127,9 +129,9 @@ export function reducer(state = initialState, action: MinesweeperActions): State
       }
 
       setupOptions = { ...setupOptions, xSize: action.payload };
-      gameBoardState = applyGameBoardOptions(gameBoardState, setupOptions);
+      const initialBoard = reallocateBoardContent(state.initialBoard, setupOptions);
 
-      return { ...state, setupOptions, gameBoardState };
+      return { ...state, setupOptions, initialBoard };
     }
 
     case MinesweeperActionTypes.SetYSize:
@@ -143,9 +145,9 @@ export function reducer(state = initialState, action: MinesweeperActions): State
       }
 
       setupOptions = { ...setupOptions, ySize: action.payload };
-      gameBoardState = applyGameBoardOptions(gameBoardState, setupOptions);
+      const initialBoard = reallocateBoardContent(state.initialBoard, setupOptions);
 
-      return { ...state, setupOptions, gameBoardState };
+      return { ...state, setupOptions, initialBoard };
     }
 
     case MinesweeperActionTypes.SetMineCount:
@@ -154,7 +156,7 @@ export function reducer(state = initialState, action: MinesweeperActions): State
         throw new InvalidStateChangeError('Can only change board options when a game is not in progress!');
       }
 
-      if (setupOptions.ySize === action.payload) {
+      if (setupOptions.mineCount === action.payload) {
         return state;
       }
 
@@ -165,57 +167,58 @@ export function reducer(state = initialState, action: MinesweeperActions): State
 
     case MinesweeperActionTypes.SendBeginGame:
     {
-      if (gameBoardState !== BLANK_INVALID_BOARD) {
-        throw new InvalidStateChangeError('Cannot begin a game unless board options are valid');
-      } else if (gameBoardState.type !== GameBoardStateType.INACTIVE ) {
+      if (interactionState.type !== InteractionStateType.INACTIVE) {
         throw new InvalidStateChangeError('Cannot begin a game unless no game is in progress');
+      } else if (state.initialBoard === BLANK_INVALID_BOARD) {
+        throw new InvalidStateChangeError('Cannot begin a game unless board options are valid');
       }
 
-      gameBoardState = {
-        ...gameBoardState,
-        type: GameBoardStateType.ACTIVE,
+      interactionState = {
+        type: InteractionStateType.WAITING,
+        expectedTurnId: -1,
+        operationType: PendingOperationType.BEGIN_GAME
       };
 
-      return {
-        ...state,
-        gameBoardState,
-      };
+      return { ...state, interactionState };
     }
 
     case MinesweeperActionTypes.SendNextMove:
     {
-      if (playerState.type !== PlayerStateType.THINKING) {
+      if (interactionState.type !== InteractionStateType.THINKING) {
         throw new InvalidStateChangeError('Cannot make a move outside of player\'s turn.');
       }
 
-      playerState = {
-        ...playerState,
-        type: PlayerStateType.OUTCOME_PENDING,
+      interactionState = {
+        type: InteractionStateType.WAITING,
+        operationType: PendingOperationType.TURN_OUTCOME,
+        expectedTurnId: interactionState.nextTurnId,
         latestMove: action.payload,
       };
 
       return {
         ...state,
-        playerState
+        interactionState
       };
     }
 
     case MinesweeperActionTypes.ReceiveGameContinues:
     {
       // TODO: When supporting canceling a game, tolerate receiving a belated result from cancelled game.
-      if ((playerState.type !== PlayerStateType.OUTCOME_PENDING) &&
-        (playerState.type !== PlayerStateType.SETUP_PENDING)) {
+      if ((interactionState.type !== InteractionStateType.WAITING) ||
+        (
+          (interactionState.operationType !== PendingOperationType.TURN_OUTCOME) &&
+          (interactionState.operationType !== PendingOperationType.BEGIN_GAME)
+        )
+      ) {
         throw new InvalidStateChangeError('Unexpected continue game outcome received');
-      } else if (gameBoardState.type !== GameBoardStateType.ACTIVE) {
-        throw new InvalidStateChangeError('Game board state is inactive');
-      } else if (playerState.nextTurnId !== action.payload.afterTurnId) {
+      } else if (interactionState.expectedTurnId !== action.payload.afterTurnId) {
         throw new InvalidStateChangeError(
-          `Outcome for turn id ${action.payload.afterTurnId} does not match expected turn id, ${playerState.nextTurnId}`);
+          `Outcome for turn id ${action.payload.afterTurnId} does not match expected turn id, ${interactionState.expectedTurnId}`);
       }
 
       const safeCellsLeft = action.payload.safeCellsLeft;
       const boardContent =
-        (playerState.type === PlayerStateType.OUTCOME_PENDING)
+        (interactionState.operationType === PendingOperationType.TURN_OUTCOME)
           ? reduceCellRevelations(gameBoardState.boardContent, setupOptions, action.payload.cellsRevealed)
           : gameBoardState.boardContent;
 
@@ -224,60 +227,76 @@ export function reducer(state = initialState, action: MinesweeperActions): State
         safeCellsLeft,
         boardContent
       };
-      playerState = {
-        ...playerState,
-        type: PlayerStateType.THINKING,
+      interactionState = {
+        type: InteractionStateType.THINKING,
         nextTurnId: action.payload.nextTurnId
       };
 
       return {
         ...state,
         gameBoardState,
-        playerState
+        interactionState
       };
     }
 
     case MinesweeperActionTypes.ReceiveGameConcluded:
     {
-      if ((playerState.type !== PlayerStateType.OUTCOME_PENDING) &&
-        (playerState.type !== PlayerStateType.ABORT_PENDING)) {
+      if ((interactionState.type !== InteractionStateType.WAITING) ||
+        (
+          (interactionState.operationType !== PendingOperationType.TURN_OUTCOME) &&
+          (interactionState.operationType !== PendingOperationType.ABORT_GAME)
+        )
+      ) {
         throw new InvalidStateChangeError('Unexpected continue game outcome received');
-      } else if (gameBoardState.type !== GameBoardStateType.ACTIVE) {
-        throw new InvalidStateChangeError('Game board is already inactive');
-      } else if (playerState.nextTurnId !== action.payload.afterTurnId) {
+      } else if (interactionState.expectedTurnId !== action.payload.afterTurnId) {
         throw new InvalidStateChangeError(
-          `Outcome for turn id ${action.payload.afterTurnId} does not match expected turn id, ${playerState.nextTurnId}`);
+          `Outcome for turn id ${action.payload.afterTurnId} does not match expected turn id, ${interactionState.expectedTurnId}`);
       }
 
-      gameBoardState = {
-        ...gameBoardState,
-        safeCellsLeft: action.payload.safeCellsLeft,
-        boardContent: reduceCellRevelations(gameBoardState.boardContent, setupOptions, action.payload.cellsRevealed)
-      };
-      playerState = {
-        latestMove: playerState.latestMove,
-        type: PlayerStateType.INACTIVE
+      let previousGame;
+      if (!! gameBoardState) {
+        const {xSize, ySize} = setupOptions;
+        const latestMove =
+          (interactionState.operationType === PendingOperationType.TURN_OUTCOME)
+            ? interactionState.latestMove : undefined;
+        const safeCellsLeft = action.payload.safeCellsLeft;
+        const boardContent = reduceCellRevelations(
+          gameBoardState.boardContent, setupOptions, action.payload.cellsRevealed);
+
+        previousGame = { xSize, ySize, boardContent, safeCellsLeft, latestMove };
+      } else {
+        const {xSize, ySize} = setupOptions;
+        const boardContent = action.payload.cellsRevealed;
+        const safeCellsLeft = action.payload.safeCellsLeft;
+
+        previousGame = { xSize, ySize, boardContent, safeCellsLeft };
+      }
+
+      interactionState = {
+        type: InteractionStateType.INACTIVE,
+        previousGame
       };
 
-      return { ...state, gameBoardState, playerState };
+      return { ...state, gameBoardState, interactionState };
     }
 
     case MinesweeperActionTypes.SendAbortGame:
     {
-      if (gameBoardState.type !== GameBoardStateType.ACTIVE) {
+      if (interactionState.type === InteractionStateType.INACTIVE) {
         throw new InvalidStateChangeError('Can only end a game when there is a game to end.');
-      } else if (playerState.type !== PlayerStateType.THINKING) {
+      } else if (interactionState.type !== InteractionStateType.THINKING) {
         throw new InvalidStateChangeError('Please wait for pending network activity to abate.');
       }
 
-      playerState = {
-        ...playerState,
-        type: PlayerStateType.ABORT_PENDING
+      interactionState = {
+        type: InteractionStateType.WAITING,
+        operationType: PendingOperationType.ABORT_GAME,
+        expectedTurnId: interactionState.nextTurnId
       };
 
       return {
         ...state,
-        playerState
+        interactionState
       };
     }
 
@@ -286,88 +305,128 @@ export function reducer(state = initialState, action: MinesweeperActions): State
   }
 }
 
+export const featureKey = 'minesweeper';
+
 export const selectMinesweeperState = createFeatureSelector<State>(featureKey);
 
-export const selectNewGameProps = createSelector(
+export const selectSetupOptions = createSelector(
   selectMinesweeperState, (state: State) => state.setupOptions
 );
 
-// export const selectCreateBoardRequest = createSelector(
-//   selectXSize, selectYSize, selectMineCount,
-//   (xSize: number, ySize: number, mineCount: number): ICreateGameRequestDto => {
-//     return { xSize, ySize, mineCount };
-//   }
-// );
-
-export const selectPlayerState = createSelector(
-  selectMinesweeperState, (state: State) => state.playerState
+export const selectInteractionState = createSelector(
+  selectMinesweeperState, (state: State) => state.interactionState
 );
 export const selectNextTurnId = createSelector(
-  selectPlayerState, (playerState: PlayerState) => {
-    if (playerState.type === PlayerStateType.THINKING) {
-      return playerState.nextTurnId;
+  selectInteractionState, (interactionState: InteractionState) => {
+    if (interactionState.type === InteractionStateType.THINKING) {
+      return interactionState.nextTurnId;
     }
   });
 export const selectExpectedTurnId = createSelector(
-  selectPlayerState, (playerState: PlayerState) => {
-    if ( (playerState.type !== PlayerStateType.THINKING) && (playerState.type !== PlayerStateType.INACTIVE)) {
-      return playerState.nextTurnId;
+  selectInteractionState, (interactionState: InteractionState) => {
+    if (interactionState.type === InteractionStateType.WAITING) {
+      return interactionState.expectedTurnId;
     }
   });
 
-export const selectGameProgress = createSelector(
-  [
-    selectBoardState, selectSafeCellsLeft, selectNextTurnId,
-    selectPlayerStateType, selectXSize, selectYSize
-  ],
-  (boardState: GameBoardCell[], safeCellsLeft: number, nextTurnId: number,
-    playerStatus: PlayerStateType, xSize: number, ySize: number) =>
-    (
-      {
-        boardState,
-        safeCellsLeft,
-        nextTurnId,
-        playerStatus,
-        xSize,
-        ySize
-      }
-    ));
-
-export const selectGameState = createSelector(
+export const selectGameBoardState = createSelector(
   selectMinesweeperState, (state: State) => state.gameBoardState);
 
+export const selectInitialBoardState = createSelector(
+  selectMinesweeperState, (state: State) => state.initialBoard);
+
+export const selectGameProgress = createSelector(
+  [selectSetupOptions, selectInitialBoardState, selectGameBoardState, selectInteractionState],
+  function (
+    setupOptions: SetupOptions,
+    initialBoard: ReadonlyArray<GameBoardCell>,
+    gameBoardState: GameBoardState,
+    interactionState: InteractionState): GameProgress
+  {
+    const interactionStateType = interactionState.type;
+
+    if (!! gameBoardState) {
+      const {xSize, ySize} = setupOptions;
+      const {boardContent, safeCellsLeft} = gameBoardState;
+
+      let latestMove;
+      if ((interactionState.type === InteractionStateType.WAITING)
+        && (interactionState.operationType === PendingOperationType.TURN_OUTCOME)) {
+        latestMove = interactionState.latestMove;
+      }
+
+      return {
+        xSize,
+        ySize,
+        boardContent,
+        safeCellsLeft,
+        latestMove,
+        interactionStateType
+      };
+    } else if (interactionState.type === InteractionStateType.INACTIVE) {
+      return {
+        ...interactionState.previousGame,
+        interactionStateType
+      };
+    } else {
+      const {xSize, ySize} = setupOptions;
+      const boardContent = initialBoard;
+      const safeCellsLeft = initialBoard.length - setupOptions.mineCount;
+
+      return {
+        xSize,
+        ySize,
+        boardContent,
+        safeCellsLeft,
+        interactionStateType
+      };
+    }
+  });
+
+export const selectSafeCellsLeft = createSelector(
+  selectGameProgress, function(progress: GameProgress): number {
+    return progress.safeCellsLeft;
+  }
+);
+
 export const selectPlayerHasTurn = createSelector(
-  selectPlayerState, (state: PlayerState) => state.type === PlayerStateType.THINKING
+  selectInteractionState,
+  function (state: InteractionState): boolean {
+    return state.type === InteractionStateType.THINKING;
+  }
 );
 
 export const selectPlayerMayStartGame = createSelector(
-  [selectPlayerState, selectNewGameProps],
-  (playerState: PlayerState, setupOptions: SetupOptions) =>
-    (playerState.type === PlayerStateType.INACTIVE) && areBoardOptionsValid(setupOptions)
-)
-
-export const selectWaitingOnServer = createSelector(
-  selectPlayerState, (state: PlayerState) => (
-    (state.type === PlayerStateType.OUTCOME_PENDING) ||
-    (state.type === PlayerStateType.SETUP_PENDING) ||
-    (state.type === PlayerStateType.ABORT_PENDING)
-  )
+  [selectInteractionState, selectSetupOptions],
+  function (interactionState: InteractionState, setupOptions: SetupOptions): boolean
+  {
+    return (interactionState.type === InteractionStateType.INACTIVE)
+      && areBoardOptionsValid(setupOptions);
+  }
 );
 
+export const selectWaitingOnServer = createSelector(
+  selectInteractionState,
+  function (state: InteractionState): boolean {
+    return state.type === InteractionStateType.WAITING;
+  }
+);
 
-
+export const selectGameInProgress = createSelector(
+  selectInteractionState,
+  function (interactionState: InteractionState) {
+    return interactionState.type !== InteractionStateType.INACTIVE;
+  }
+);
 
 export const allSelectors = {
-  selectNewGameProps: selectNewGameProps,
+  selectSetupOptions: selectSetupOptions,
   selectNextTurnId: selectNextTurnId,
-  selectSafeCellsLeft: selectSafeCellsLeft,
-  selectBoardState: selectBoardState,
+  selectExpectedTurnId: selectExpectedTurnId,
   selectGameProgress: selectGameProgress,
-  selectGameState: selectGameState,
-
-  // selectWaitingForServer: selectWaitingForServer,
-  // selectWaitingForPlayerMove: selectWaitingForPlayerMove,
-  // selectPlayerMaySetOptions: selectPlayerMaySetOptions,
-  // selectPlayerMayBeginGame: selectPlayerMayBeginGame,
-  // selectPlayerMustResetGame: selectPlayerMustResetGame
+  selectSafeCellsLeft: selectSafeCellsLeft,
+  selectPlayerHasTurn: selectPlayerHasTurn,
+  selectPlayerMayStartGame: selectPlayerMayStartGame,
+  selectWaitingOnServer: selectWaitingOnServer,
+  selectGameInProgress: selectGameInProgress
 };

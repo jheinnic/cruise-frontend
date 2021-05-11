@@ -4,16 +4,18 @@ import {Actions, Effect, ofType} from '@ngrx/effects';
 import {Store} from '@ngrx/store';
 import {flatMap, map, take} from 'rxjs/operators';
 
-import {
-  MinesweeperActionTypes, SendNextMove, ReportPlayerLoses, ReceiveGameConcluded, ReceiveGameContinues, ShowRevealedCells
-} from '../actions/minesweeper.actions';
 import {mineSweeperApiUrl} from '../../../../../environments/environment';
 import {IGameCreatedDto} from '../../dto/replies/game-created.dto';
 import {IPlayerTurnOutcomeDto} from '../../dto/replies/player-turn-outcome.dto';
 import {PlayerStatus} from '../../dto/replies/player-status.enum';
-import * as fromStore from '../reducers/minesweeper.reducer';
 import {ICreateGameRequestDto} from '../../dto/requests/create-game-request.dto';
 import {IMakeMoveRequestDto} from '../../dto/requests/make-move-request.dto';
+
+import {
+  MinesweeperActionTypes, SendNextMove, ReceiveGameConcluded, ReceiveGameContinues
+} from '../actions/minesweeper.actions';
+import {SetupOptions} from '../models/minesweeper.models';
+import * as fromStore from '../reducers/minesweeper.reducer';
 
 @Injectable()
 export class MinesweeperEffects {
@@ -23,24 +25,34 @@ export class MinesweeperEffects {
     this.actions$.pipe(
       ofType(MinesweeperActionTypes.SendBeginGame),
       flatMap(
-        () => this.store$.select(
-          fromStore.selectNewGameProps
-        ).pipe(
+        () => this.store$.select(fromStore.selectSetupOptions).pipe(
           take(1),
           flatMap(
-            (requestDto: ICreateGameRequestDto) => {
+            (setupOptions: SetupOptions) => {
+              const requestDto: ICreateGameRequestDto = setupOptions;
               console.log('Sending POST for ', this.apiUrl, requestDto);
               return this.httpClient.post<IGameCreatedDto>(
                 this.apiUrl + '/', requestDto, {observe: 'response', responseType: 'json'}
+              ).pipe(
+                map((response: HttpResponse<IGameCreatedDto>) => {
+                  const safeCellsLeft =
+                    (setupOptions.xSize * setupOptions.ySize) - setupOptions.mineCount;
+                  return { httpResponse: response, safeCellsLeft };
+                })
               );
             }
           )
         )
       ),
       map(
-        (response: HttpResponse<IGameCreatedDto>) => {
-           console.log('Processing response: ', response);
-           return new ReceiveGameContinues(response.body.nextTurnId);
+        ( {httpResponse, safeCellsLeft}: {httpResponse: HttpResponse<IGameCreatedDto>, safeCellsLeft: number} ) => {
+           console.log('Processing response: ', httpResponse);
+           return new ReceiveGameContinues({
+             afterTurnId: -1,
+             nextTurnId: httpResponse.body.nextTurnId,
+             safeCellsLeft: safeCellsLeft,
+             cellsRevealed: []
+           });
         }
       )
     );
@@ -50,7 +62,7 @@ export class MinesweeperEffects {
     this.actions$.pipe(
       ofType(MinesweeperActionTypes.SendNextMove),
       flatMap((action: SendNextMove) => {
-        return this.store$.select(fromStore.selectNextTurnId)
+        return this.store$.select(fromStore.selectExpectedTurnId)
           .pipe(
             take(1),
             flatMap((nextTurnId: number) => {
@@ -85,7 +97,7 @@ export class MinesweeperEffects {
           return new ReceiveGameContinues(response.body);
         }
         case PlayerStatus.DEFEATED: {
-          return new ReportPlayerLoses(response.body);
+          return new ReceiveGameConcluded(response.body);
         }
         case PlayerStatus.WINNER: {
           return new ReceiveGameConcluded(response.body);

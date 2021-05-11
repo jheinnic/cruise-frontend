@@ -4,7 +4,7 @@ import {Store} from '@ngrx/store';
 import {Subscription} from 'rxjs';
 
 import {SendBeginGame, SetMineCount, SetXSize, SetYSize} from '../store/actions/minesweeper.actions';
-import {selectNewGameProps, State} from '../store/reducers/minesweeper.reducer';
+import {selectSetupOptions, State} from '../store/reducers/minesweeper.reducer';
 import {SetupOptions} from '../store/models/minesweeper.models';
 
 @Component({
@@ -26,7 +26,7 @@ export class CreateGameFormComponent implements OnInit, OnDestroy
       mineCount: [3]
     });
 
-    this.store.select(selectNewGameProps)
+    this.store.select(selectSetupOptions)
       .toPromise()
       .then(
         (value: SetupOptions) => {

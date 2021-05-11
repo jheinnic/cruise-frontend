@@ -1,6 +1,6 @@
 import {Action} from '@ngrx/store';
 import {IPlayerTurnOutcomeDto} from '../../dto/replies/player-turn-outcome.dto';
-import {LatestOutcome} from '../models/minesweeper.models';
+import {TurnOutcome} from '../models/minesweeper.models';
 
 export enum MinesweeperActionTypes
 {
@@ -62,14 +62,14 @@ export class ReceiveGameContinues implements Action
 {
   public readonly type = MinesweeperActionTypes.ReceiveGameContinues;
 
-  constructor(public readonly payload: LatestOutcome) { }
+  constructor(public readonly payload: TurnOutcome) { }
 }
 
 export class ReceiveGameConcluded implements Action
 {
   public readonly type = MinesweeperActionTypes.ReceiveGameConcluded;
 
-  constructor(public readonly payload: LatestOutcome) { }
+  constructor(public readonly payload: TurnOutcome) { }
 }
 
 export type MinesweeperActions =

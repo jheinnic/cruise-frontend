@@ -10,7 +10,7 @@
       </mat-tab>
     </mat-tab-group>
   </ng-template>
-  <cai-create-game-form *ngIf="! gameInProgress"></cai-create-game-form>
+  <cai-create-game-form *ngIf="! (gameInProgress|async)"></cai-create-game-form>
   <cai-status-panel></cai-status-panel>
   <cai-game-board></cai-game-board>
   <cai-play-again-options></cai-play-again-options>
