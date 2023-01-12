@@ -40,7 +40,7 @@
     "apollo-link": "^1.2.4",
     "chance": "^1.0.18",
     "class-transformer": "^0.2.0",
-    "class-validator": "^0.9.1",
+    "class-validator": "^0.14.0",
     "core-js": "^2.5.4",
     "graphql": "^14.0.2",
     "graphql-codegen-typescript-apollo-angular": "^0.14.5",
